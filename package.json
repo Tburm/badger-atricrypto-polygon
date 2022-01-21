@@ -1,5 +1,9 @@
 {
     "name": "badger-finance",
+    "engines": {
+        "npm": ">=6.0.0",
+        "node": "16.13.2"
+    },
     "version": "0.0.0",
     "devDependencies": {
         "@commitlint/cli": "^12.1.4",
