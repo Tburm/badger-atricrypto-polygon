@@ -23,7 +23,6 @@ console = Console()
 from dotmap import DotMap
 import pytest
 
-
 ## Accounts ##
 @pytest.fixture
 def deployer():
