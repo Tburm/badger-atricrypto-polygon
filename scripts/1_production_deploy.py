@@ -28,6 +28,8 @@ console = Console()
 
 sleep_between_tx = 1
 
+# set a gas price
+network.gas_price("30 gwei")
 
 def main():
     """
@@ -40,6 +42,7 @@ def main():
 
     # Get deployer account from local keystore
     dev = connect_account()
+    verify = True
 
     # Get actors from registry
     registry = interface.IBadgerRegistry(REGISTRY)
@@ -50,8 +53,8 @@ def main():
     keeper = registry.get("keeper")
     proxyAdmin = registry.get("proxyAdminTimelock")
 
-    name = "FTM STRAT" ## In vaults 1.5 it's the full name
-    symbol = "bFRM-STrat" ## e.g The full symbol (remember to add symbol from want)
+    name = "Polygon aTriCrypto Curve Strategy" ## In vaults 1.5 it's the full name
+    symbol = "bcrvUSDBTCETH" # e.g The full symbol (remember to add symbol from want)
 
     assert strategist != AddressZero
     assert guardian != AddressZero
@@ -70,24 +73,26 @@ def main():
         proxyAdmin,
         name,
         symbol,
-        dev
+        dev,
+        verify
     )
 
     # Deploy Strategy
     strategy = deploy_strategy(
         vault,
         proxyAdmin,
-        dev
+        dev,
+        verify
     )
 
-    strategy = MyStrategy.at("0x3ff634ce65cDb8CC0D569D6d1697c41aa666cEA9")
+    # strategy = MyStrategy.at("0x3ff634ce65cDb8CC0D569D6d1697c41aa666cEA9")
 
     dev_setup = vault.setStrategy(strategy, {"from": dev})
     console.print("[green]Strategy was set was deployed at: [/green]", dev_setup)
     
 
 
-def deploy_vault(governance, keeper, guardian, strategist, badgerTree, proxyAdmin, name, symbol, dev):
+def deploy_vault(governance, keeper, guardian, strategist, badgerTree, proxyAdmin, name, symbol, dev, verify):
     args = [
         WANT,
         governance,
@@ -109,14 +114,16 @@ def deploy_vault(governance, keeper, guardian, strategist, badgerTree, proxyAdmi
     print("Vault Arguments: ", args)
 
     vault_logic = TheVault.deploy(
-        {"from": dev}
+        {"from": dev},
+        publish_source=verify
     )  # TheVault Logic ## TODO: Deploy and use that
 
     vault_proxy = AdminUpgradeabilityProxy.deploy(
         vault_logic,
         proxyAdmin,
         vault_logic.initialize.encode_input(*args),
-        {"from": dev}
+        {"from": dev},
+        publish_source=verify
     )
     time.sleep(sleep_between_tx)
 
@@ -130,7 +137,7 @@ def deploy_vault(governance, keeper, guardian, strategist, badgerTree, proxyAdmi
 
 
 def deploy_strategy(
-     vault, proxyAdmin, dev
+     vault, proxyAdmin, dev, verify
 ):
 
     args = [
@@ -140,14 +147,19 @@ def deploy_strategy(
 
     print("Strategy Arguments: ", args)
 
-    strat_logic = MyStrategy.deploy({"from": dev})
+    strat_logic = MyStrategy.deploy({"from": dev}, publish_source=verify)
+    # with open("strategy.txt", "w") as f:
+    #     # Writing data to a file
+    #     f.write(MyStrategy.get_verification_info()['flattened_source'])
+
     time.sleep(sleep_between_tx)
 
     strat_proxy = AdminUpgradeabilityProxy.deploy(
         strat_logic,
         proxyAdmin,
         strat_logic.initialize.encode_input(*args),
-        {"from": dev}
+        {"from": dev},
+        publish_source=verify
     )
     time.sleep(sleep_between_tx)
 
