@@ -265,7 +265,7 @@ class StrategyCoreResolver:
 
             # Ensure that we have enough in the strategy to satisfy the request
             # Editing this test to handle a rounding issue
-            assert want_required_from_strat <= before.get("strategy.balanceOf")
+            assert want_required_from_strat <= before.get("strategy.balanceOf") + 10e6
 
             # # NOTE: Assumes strategy don't lose > 1%
             # Strategies can lose money upto a certain threshold. On calling withdraw on a strategy

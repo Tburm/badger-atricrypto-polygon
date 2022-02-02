@@ -11,10 +11,13 @@ def state_setup(deployer, vault, strategy, want, keeper):
 
     startingBalance = want.balanceOf(deployer)
     depositAmount = int(startingBalance * 0.8)
+    tendAmount = int(startingBalance * 0.01)
     assert startingBalance >= depositAmount
 
     want.approve(vault, MaxUint256, {"from": deployer})
     vault.deposit(depositAmount, {"from": deployer})
+
+    want.transfer(strategy, tendAmount, {"from": deployer})
 
     chain.sleep(days(1))
     chain.mine()
